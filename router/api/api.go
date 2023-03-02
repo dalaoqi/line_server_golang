@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"line_server_golang/dto"
 	"line_server_golang/internal/utils/db"
 	"line_server_golang/internal/utils/line"
 	"log"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/line/line-bot-sdk-go/linebot"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type broadcastBody struct {
@@ -47,4 +49,27 @@ func Broadcast(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, "OK")
+}
+
+func GetUserMessages(c *gin.Context) {
+	var lineEvent dto.LineEvent
+	var res = make([]dto.LineEvent, 0)
+	userId := c.Param("userId")
+
+	cur, err := db.LineEvent.Find(context.Background(), bson.M{"source.userid": userId})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		log.Printf("get users' messages error: %v", err.Error())
+		return
+	}
+
+	for cur.Next(context.Background()) {
+		if err := cur.Decode(&lineEvent); err != nil {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			log.Printf("get users' messages error: %v", err.Error())
+			return
+		}
+		res = append(res, lineEvent)
+	}
+	c.JSON(http.StatusOK, res)
 }
