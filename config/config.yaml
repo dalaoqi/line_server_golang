@@ -1,0 +1,9 @@
+app:
+  lineAccessToken: <your line access token>
+  lineSecret: <your line secrete>
+  port: 1234
+  
+db:
+  mongo:
+    name: cinnox
+    url: mongodb://localhost:27017
