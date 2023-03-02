@@ -14,6 +14,7 @@ var Router = gin.Default()
 func Init() {
 	r := gin.Default()
 	r.POST("/callback", api.Webhook)
+	r.POST("/broadcast", api.Broadcast)
 	port := fmt.Sprintf(":%d", viper.GetInt64("app.port"))
 	err := r.Run(port)
 
