@@ -23,5 +23,6 @@ func Init() {
 	log.Println("Connected to MongoDB!")
 
 	dbName := viper.GetString("db.mongo.name")
-	db.MongoDB = db.MongoClient.Database(dbName)
+	collectionName := viper.GetString("db.mongo.lineEvent.name")
+	db.LineEvent = db.MongoClient.Database(dbName).Collection(collectionName)
 }

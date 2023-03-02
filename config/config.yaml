@@ -7,3 +7,5 @@ db:
   mongo:
     name: cinnox
     url: mongodb://localhost:27017
+    lineEvent:
+      name: lineEvent
