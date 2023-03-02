@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"line_server_golang/dto"
 	"line_server_golang/internal/utils/db"
 	"line_server_golang/internal/utils/line"
@@ -24,6 +25,14 @@ func Webhook(c *gin.Context) {
 	}
 
 	for _, event := range events {
+		if event.Type == linebot.EventTypeFollow {
+			_, err = line.LineClient.BroadcastMessage(linebot.NewTextMessage(fmt.Sprintf("User ID: %v", event.Source.UserID))).Do()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, err.Error())
+				log.Printf("broadcast(push ID) error: %v", err.Error())
+				return
+			}
+		}
 		_, err = db.LineEvent.InsertOne(context.Background(), event)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err.Error())
@@ -56,7 +65,7 @@ func GetUserMessages(c *gin.Context) {
 	var res = make([]dto.LineEvent, 0)
 	userId := c.Param("userId")
 
-	cur, err := db.LineEvent.Find(context.Background(), bson.M{"source.userid": userId})
+	cur, err := db.LineEvent.Find(context.Background(), bson.M{"source.userid": userId, "type": "message"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		log.Printf("get users' messages error: %v", err.Error())
